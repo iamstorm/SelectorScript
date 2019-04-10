@@ -106,6 +106,8 @@ def NormlizePrice(df, colNames):
     return cp
 
 
+
+
 def Info(msg):
     if Setting.PrintInfo:
         print(msg)

@@ -35,6 +35,7 @@ def FetchRunTimeDataByDFCFW(stockCount):
     df = df.append(sArr, ignore_index=True)
     df.rename(columns={1:'code', 3:'trade', 6: 'volume', 7: 'amount', 9: 'high', 10: 'low', 11: 'open'}, inplace = True)
     df = df[df['volume'] != '-']
+    df = df[df['trade'] != '-']
     df = Utils.NormlizePrice(df, ['trade', 'high', 'low', 'open'])
     df['amount'] = (df['amount'].astype(float)/1000.0)
     return df
@@ -83,5 +84,5 @@ def Run(bindir):
     except:
         print(sys.exc_info())
         traceback.print_exc(file=sys.stdout)
-        raise    
+        raise
     Utils.MarkAsSuc(bindir)

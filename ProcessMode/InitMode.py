@@ -177,7 +177,7 @@ def Update000001(conn):
         print("大盘历史数据是完整的，不需要更新。")
         return
     Utils.Info("正在更新大盘数据{0}-现在...".format(start))
-    df = Fetch000001WithBaostock(start);
+    df = Fetch000001(start);
  #  df = Fetch000001(start)
     df.to_sql(name='000001', con=conn, if_exists='append', index=False)
     Utils.Info("完成更新大盘数据。")
