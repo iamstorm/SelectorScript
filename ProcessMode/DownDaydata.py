@@ -22,11 +22,11 @@ def AppendToBinary(df, daydir, symbol):
 def CreateDaySqliteTable(conn, stocks, orgEmpty):
     if orgEmpty:
         sSQL = '''
-        CREATE TABLE SysInfo ( 
+        CREATE TABLE SysInfo (
             [KEY] VARCHAR( 200 )   PRIMARY KEY
                                    NOT NULL
                                    UNIQUE,
-            val   VARCHAR( 4000 ) 
+            val   VARCHAR( 4000 )
         );
         '''
         conn.execute(sSQL)
@@ -68,7 +68,9 @@ def DownloadDayRecord(datadir, conn, globalConn, stocks):
         Utils.Info("目录：{0}不存在，现在创建了, 下载数据...".format(daydir))
         os.mkdir(daydir)
 
-    progress = Utils.Progress(len(stocks))      
+
+    progress = Utils.Progress(len(stocks))
+    progressStartTime = datetime.datetime.now()
     for ts_code,symbol in stocks:
         start = int(Utils.ExeScalar(conn, "Select ifnull(max(trade_date), {0}) From [{1}]".format(Setting.DataFrom, symbol)))
         if start >= lastTradeDay:
@@ -77,7 +79,7 @@ def DownloadDayRecord(datadir, conn, globalConn, stocks):
             progress.step()
             continue
 
-        msg = "开始获取{0}的历史数据{1}-现在...".format(ts_code, start)
+        msg = "开始获取{0}的历史数据{1}-现在(总耗时：{2})...".format(ts_code, start, Utils.ReportWatch(datetime.datetime.now() - progressStartTime))
         progress.show(msg)
         while True:
             try:
@@ -106,7 +108,7 @@ def DownloadDayRecord(datadir, conn, globalConn, stocks):
 
 def Downlod(datadir, globalConn):
     dbFile =Utils.GetDaySqliteFilePath(datadir)
-    orgEmpty = not os.path.exists(dbFile) 
+    orgEmpty = not os.path.exists(dbFile)
     conn = sqlite3.connect(dbFile)
     stocks = Utils.GetStockCodeInfos(globalConn)
     CreateDaySqliteTable(conn, stocks, orgEmpty)

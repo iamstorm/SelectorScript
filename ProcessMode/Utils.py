@@ -105,7 +105,13 @@ def NormlizePrice(df, colNames):
         cp[colName] = (cp[colName].astype(float)*10000).astype(int)
     return cp
 
-
+def ReportWatch(watch):
+    elapseM = int(watch.total_seconds() / 60)
+    elapseS = int(watch.total_seconds() % 60)
+    if elapseM == 0:
+        return "{0}s".format(elapseS)
+    else:
+        return "{0}m{1}s".format(elapseM, elapseS)
 
 
 def Info(msg):
