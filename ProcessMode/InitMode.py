@@ -3,6 +3,7 @@ import datetime
 import sqlite3
 import baostock as bs
 import pandas as pd
+import easyquotation
 from . import Utils
 from . import DownDaydata as DY, Setting
 
@@ -213,5 +214,6 @@ def Run(bindir):
 
 
     Update000001(conn)
+    easyquotation.update_stock_codes()
 
 

@@ -5,7 +5,11 @@ import pandas as pd
 import sys
 import requests
 import re
+import traceback
 from . import Utils
+import easyquotation
+
+runtimeSrc = 'tencent' # 新浪 ['sina'] 腾讯 ['tencent', 'qq']
 
 tu = Utils.InitTuShare()
 
@@ -17,6 +21,31 @@ def FetchRunTimeData():
     dfValid['volume'] = (dfValid['volume'].astype(float)/100.0)
     dfValid['amount'] = (dfValid['amount'].astype(float)/1000.0)
     return dfValid
+
+def FetchRunTimeDataByEASYQUOTATION(stockCount):
+    quotation = easyquotation.use(runtimeSrc)
+    data = quotation.market_snapshot(prefix=False)
+    obj = {"code":[], "trade":[], "volume":[], "amount":[], "high":[], "low":[], "open":[]}
+    for attribute, value in data.items():
+        obj["code"].append(attribute)
+        obj["trade"].append(str(value["now"]))
+        obj["volume"].append(str(value["volume"]))
+        obj["amount"].append(str(value["成交额(万)"]))
+        obj["high"].append(str(value["high"]))
+        obj["low"].append(str(value["low"]))
+        obj["open"].append(str(value["open"]))
+
+
+    df = pd.DataFrame(obj)
+    df = df[df['volume'] != '']
+    df = df[df['trade'] != '']
+    df = df[df['high'] != '']
+    df = df[df['low'] != '']
+    df = df[df['open'] != '']
+    df = Utils.NormlizePrice(df, ['trade', 'high', 'low', 'open'])
+    df['amount'] = (df['amount'].astype(float)/10000.0)
+    df['volume'] = (df['volume'].astype(float)/100.0)
+    return df
 
 def FetchRunTimeDataByDFCFW(stockCount):
     url = 'http://nufm.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?cb=jQueryABC&type=CT&token=4f1862fc3b5e77c150a2b985b12db0fd&sty=FCOIATC&cmd=C._A&st=(ChangePercent)&sr=-1&p=1&ps={0}'.format(stockCount+1000)
@@ -51,6 +80,21 @@ def Fetch000001RunTimeData():
     df['vol'] = (df['vol'].astype(float)*100)
     return df
 
+def Fetch000001RunTimeDataByEASYQUOTATION():
+    quotation = easyquotation.use(runtimeSrc)
+    data = quotation.stocks(['sh000001'], prefix=True)
+    obj = {"open":[], "close":[], "high":[], "low":[], "vol":[]}
+    for attribute, value in data.items():
+        obj["open"].append(str(value["open"]))
+        obj["close"].append(str(value["now"]))
+        obj["high"].append(str(value["high"]))
+        obj["low"].append(str(value["low"]))
+        obj["vol"].append(str(value["volume"]))
+
+    df = pd.DataFrame(obj)
+    df['vol'] = (df['vol'].astype(float)/100)
+    return df
+
 def UpdateRunTime(bindir):
     datadir = os.path.join(bindir, "data")
     now = datetime.datetime.now();
@@ -64,13 +108,13 @@ def UpdateRunTime(bindir):
 
     Utils.Info("开始下载实时数据...")
     nowtime = int(now.date().strftime("%Y%m%d")+now.time().strftime("%H"))
-    df = FetchRunTimeDataByDFCFW(stockCount)
+    df = FetchRunTimeDataByEASYQUOTATION(stockCount)
     conn.execute("Delete From runtime");
     conn.commit()
     df.drop_duplicates(['code'], inplace=True)
     df.to_sql(name='runtime', con=conn, if_exists='append', index=False)
 
-    df = Fetch000001RunTimeData()
+    df = Fetch000001RunTimeDataByEASYQUOTATION()
     conn.execute("Delete From [000001runtime]");
     conn.commit()
     df.to_sql(name='000001runtime', con=conn, if_exists='append', index=False)
