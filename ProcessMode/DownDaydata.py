@@ -52,8 +52,8 @@ def CreateDaySqliteTable(conn, stocks, orgEmpty):
             '''.format(symbol)
         conn.execute(sSQL)
         progress.step()
-    progress.finish("完成为每个股票创建表结构")
     conn.commit()
+    progress.finish("完成为每个股票创建表结构")
 
 
 def DownloadDayRecord(datadir, conn, globalConn, stocks):

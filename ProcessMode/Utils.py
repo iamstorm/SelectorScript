@@ -47,18 +47,18 @@ def SetValToSys(conn, key, val):
 class Progress:
     def __init__(self, count, bar_length=Setting.DefBarLen):
       self.count = count
-      self.finishCount = 0
+      self.processsingCount = 1
       self.bar_length = bar_length
 
     def show(self, msg):
-        percent = self.finishCount*100.0/self.count
+        percent = self.processsingCount*100.0/self.count
         hashes = '#' * int(percent/100.0 * self.bar_length)
         spaces = ' ' * (self.bar_length - len(hashes))
         sys.stdout.write("\r{:}总进度[{:}] {:.2f}%".format(msg, hashes + spaces, percent))
         sys.stdout.flush()
 
     def step(self, count = 1):
-        self.finishCount += 1;
+        self.processsingCount += 1;
 
     def finish(self, msg):
         percent = 100
